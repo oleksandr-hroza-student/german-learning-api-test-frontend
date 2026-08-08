@@ -17,7 +17,7 @@ const confirmPasswordInput = document.getElementById("confirmPassword");
 async function handleSignUp(event){
     //Prevents weird page reloads
     event.preventDefault();
-    console.log("Sign Up button pressed");
+    console.log("handleSignUp called");
 
 
     const email = emailInput.value.trim();
@@ -31,7 +31,7 @@ async function handleSignUp(event){
     console.log("Inputs are valid!");
 
     try{
-        const userCredential = createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
         console.log("Account created!");
         console.log(userCredential.user);
@@ -39,9 +39,6 @@ async function handleSignUp(event){
         console.log(error.message);
         console.log("BIGGG PROBLEMM\nSign Up failed miserably");
     }
-    //This is a PROMISE
-    const result = createUserWithEmailAndPassword(auth, email, password)
-
 
 
     console.log(email, password, confirmPassword);
