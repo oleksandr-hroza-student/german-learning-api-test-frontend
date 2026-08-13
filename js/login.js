@@ -38,6 +38,23 @@ async function handleLogin(event){
         console.log("\n\nUser's JWT token:", idToken);
         console.log("\n\nUser's ID:", user.uid);
 
+        //Fetch - giver a HTTP responce, not a parced Json
+        //eg: (status: 200, ok: true, redirected: false, type: "cors", url: "http://)
+        //to get JSON: Flask jsonify -> HTTP responce -> fetch() -> responce.json() -> JavaScript object.
+        const response = await fetch("http://127.0.0.1:5000/api/protected", {
+            method: "GET",
+            headers: {
+                //` ` is used when we want to insert variables into strings
+                //'' - will just send Bearer ${idToken} instead of value inside of the idToken
+                "Authorization": `Bearer ${idToken}`
+            }
+        })
+        console.log("Status:", response.status);
+
+
+        const data = await response.json();
+
+        console.log("Backend response:", data);
 
     }catch(error){
         console.log(error.message);
