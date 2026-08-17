@@ -8,10 +8,47 @@ import {
 
 console.log("Hello from signup.js!");
 
+
 const signUpButton = document.getElementById("signUpButton");
+const usernameInput = document.getElementById("username");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirmPassword");
+
+async function handleProfileCreation(idToken, username){
+    const response = await fetch("http://127.0.0.1:5000/api/me", {
+        method: "POST",
+        headers: {
+            //because the backend is going data = request.get_json()
+            "Content-Type": "application/json",
+            //` ` is used when we want to insert variables into strings
+            //'' - will just send Bearer ${idToken} instead of value inside of the idToken
+            "Authorization": `Bearer ${idToken}`
+
+        },
+        body: JSON.stringify({
+            username: username
+        })
+    });
+
+    const data = await response.json();
+    console.log("Status:", response.status);
+    console.log("Backend response:", data);
+    if (!response.ok){
+        if (response.status === 409){
+            console.log("Profile already exists!");
+            return false;
+        }
+        if (response.status >= 500){
+            console.log("Server error! Profile creation could be retried");
+            return false;
+        }
+        console.log("Account exists, but profile creation failed!", data);
+        return false;
+    }
+    return true;
+}
+
 
 //async - to wait for the response from firebase later on.
 async function handleSignUp(event){
@@ -23,6 +60,7 @@ async function handleSignUp(event){
     const email = emailInput.value.trim();
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
+    const username = usernameInput.value.trim();
 
     if(!validateInputs(email, password, confirmPassword)){
         console.log("Invalid inputs");
@@ -32,13 +70,25 @@ async function handleSignUp(event){
 
     try{
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const idToken = await user.getIdToken();
 
-        console.log("Account created!");
-        console.log(userCredential.user);
+        const profileCreated = await handleProfileCreation(idToken, username);
+        if (!profileCreated){
+            console.log("Account created, but profine not created");
+            return;
+        }
+        console.log("Account created and profile created!");
+
+
+        //console.log("Account created!");
+        //console.log(userCredential.user);
     }catch(error){
         console.log(error.message);
         console.log("BIGGG PROBLEMM\nSign Up failed miserably");
     }
+
+
 
 
     console.log(email, password, confirmPassword);
